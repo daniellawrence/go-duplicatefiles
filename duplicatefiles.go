@@ -58,8 +58,8 @@ func GoWalk(location string) {
 		if strings.HasSuffix(path, "~") {
 			return
 		}
-		// Duplicate dirs... you mean emtpy dirs
-		if fileinfo.IsDir() {
+		// Skip everything is that not a normal file.
+		if ! fileinfo.Mode().IsRegular() {
 			return
 		}
 		file_size := fileinfo.Size()
