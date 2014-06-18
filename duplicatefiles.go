@@ -13,10 +13,6 @@ import (
 func main(){
      location := "."
      GoWalk(location)
-     chann := GoWalk(location)
-     for msg := range chann {
-     	 fmt.Println("# reviewed", msg)
-     }
      return
 }
 
@@ -36,33 +32,28 @@ func checkDuplicates(files []string) (result bool) {
 
 }
  
-func GoWalk(location string) (chan string) {
-     chann := make(chan string)
-     dict  := make(map[int64][]string)
+func GoWalk(location string) {
+	dict  := make(map[int64][]string)
 
-     go func(){
-     	filepath.Walk(location, func(path string, fileinfo os.FileInfo, _ error)(err error){
-	    // skip over hidden files
-	    if strings.HasPrefix(path, ".") {
-	       return
-	    }
-	    // Skip over tmp files
-	    if strings.HasSuffix(path, "~") {
-	       return
-	    }
-	    file_size := fileinfo.Size()
-	    dict[file_size] = append(dict[file_size], path)
-	    chann <- path
-	    return
+	filepath.Walk(location, func(path string, fileinfo os.FileInfo, _ error)(err error){
+		// skip over hidden files
+		if strings.HasPrefix(path, ".") {
+			return
+		}
+		// Skip over tmp files
+		if strings.HasSuffix(path, "~") {
+			return
+		}
+		file_size := fileinfo.Size()
+		dict[file_size] = append(dict[file_size], path)
+		return
 	})
+
 	for _, v := range dict {
-	    if len(v) == 1 {
-	       continue
-	    }
-	    // fmt.Println("possible duplicates:", v)
-	    checkDuplicates(v)
+		// only check if the file is a duplicate if they are the same size
+		if len(v) == 1 {
+			continue
+		}
+		checkDuplicates(v)
 	}
-	defer close(chann)
-     }()
-	return chann
 }
