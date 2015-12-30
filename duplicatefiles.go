@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	args := os.Args[1:]
 	location := "."
 	if len(args) > 0 {
@@ -27,8 +26,10 @@ func checkDuplicates(files []string) (result bool) {
 
 	for _, filename := range files {
 		hasher := sha256.New()
+
+		// Read the file's contents into `file_content'
 		file_content, _ := ioutil.ReadFile(filename)
-		hasher.Write(file_content)
+		hasher.Write(&file_content)
 		file_hash := hex.EncodeToString(hasher.Sum(nil))
 
 		// If the file_hash is already in the stored_hashs
@@ -37,8 +38,12 @@ func checkDuplicates(files []string) (result bool) {
 			fmt.Printf("%s is a Duplicate of %s\n", filename, stored_hashs[file_hash])
 			wasted_space = len(stored_hashs[file_hash]) * len(file_content)
 		}
+
+		// Store all the results in a map
 		stored_hashs[file_hash] = append(stored_hashs[file_hash], filename)
 	}
+
+	// Find out if there is any wasted space.
 	if wasted_space > 0 {
 		fmt.Println(files[0], "Wasted space:", wasted_space)
 	}
