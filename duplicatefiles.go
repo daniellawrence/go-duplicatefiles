@@ -28,14 +28,21 @@ func checkDuplicates(files []string) (result bool) {
 		hasher := sha256.New()
 
 		// Read the file's contents into `file_content'
-		file_content, _ := ioutil.ReadFile(filename)
-		hasher.Write(&file_content)
+		file_content, read_file_err := ioutil.ReadFile(filename)
+		if read_file_err != nil {
+			fmt.Printf("FAILED to read file, %s\n", filename)
+		}
+		hasher.Write(file_content)
 		file_hash := hex.EncodeToString(hasher.Sum(nil))
+		short_hash := file_hash[0:8]
+
+		// Print out the filehash
+		fmt.Printf("%s hash for %s\n", short_hash, filename)
 
 		// If the file_hash is already in the stored_hashs
 		// then we know we have a duplicate
 		if _, ok := stored_hashs[file_hash]; ok {
-			fmt.Printf("%s is a Duplicate of %s\n", filename, stored_hashs[file_hash])
+			fmt.Printf("%s Duplicate has for %s %s\n", short_hash, filename, stored_hashs[file_hash])
 			wasted_space = len(stored_hashs[file_hash]) * len(file_content)
 		}
 
@@ -67,6 +74,8 @@ func GoWalk(location string) {
 		if ! fileinfo.Mode().IsRegular() {
 			return
 		}
+
+		// fmt.Printf("DEBUG: Testing %s\n", path)
 		file_size := fileinfo.Size()
 		dict[file_size] = append(dict[file_size], path)
 		return
